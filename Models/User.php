@@ -43,19 +43,47 @@ class User extends Connection
     }
 
 	public function insert($obj){
-    	$sql = "INSERT INTO $this->table(name,email,password) VALUES (:name,:email,:password)";
-    	$query = Connection::prepare($sql);
-        $query->bindValue('name',  $obj->name);
-        $query->bindValue('email', $obj->email);
-        $query->bindValue('password' , password_hash($obj->password, PASSWORD_DEFAULT));
-    	$query->execute();
-		$result = $query->db->lastInsertId();
+		$conn = Connection::connect();
+		$sql = "INSERT INTO $this->table(name,email,password) VALUES (?,?,?)";
+		$query = $conn->prepare($sql);
+		$query->execute([$obj->name, $obj->email, password_hash($obj->password, PASSWORD_DEFAULT)]);
+		$lastId = $conn->lastInsertId();
 
-		return $result;
-		
+		if ($lastId > 0) {
+			return $lastId;
+		}
+		return false;
+	}
 
-		
+	public function find($id)
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE id={$id}";
+        $query = Connection::prepare($sql);
+        $query->bindParam(1, $this->id);
+        $query->execute();
+        return $query;
+    }
 
+	public function update($obj,$id = null){
+		$sql = "UPDATE $this->table SET name = :name, email = :email, password = :password WHERE id = :id ";
+		$query = Connection::prepare($sql);
+		$query->bindValue('name', $obj->name);
+		$query->bindValue('email', $obj->email);
+		$query->bindValue('password', password_hash($obj->password, PASSWORD_DEFAULT));
+		$query->bindValue('id', $id);
+		return $query->execute();
+	}
+
+	public function delete($id = null){
+		$sql = "DELETE FROM $this->table WHERE id = :id ";
+		$query = Connection::prepare($sql);
+		$query->bindParam('id', $id);
+
+		if ($query->execute()) {
+			return true;
+		}
+
+		return false;
 	}
 }
 
