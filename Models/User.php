@@ -8,6 +8,8 @@ class User extends Connection
     private $email;
     private $password;
 
+	private $table = 'users';
+
 	function  getName() {
 		return $this->name;
 	}
@@ -20,7 +22,7 @@ class User extends Connection
 		return $this->email;
 	}
 
-	function setEmail($mail) {
+	function setEmail($email) {
 		$this->email = $email;
 	}
 
@@ -28,17 +30,33 @@ class User extends Connection
 		return $this->password;
 	}
 
-	function setPassword($assword) {
+	function setPassword($password) {
 		$this->password = $password;
 	}
 
     public function findAll()
     {
-        $sql = "SELECT * FROM users";
+        $sql = "SELECT * FROM $this->table";
         $query = Connection::prepare($sql);
         $query->execute();
         return $query->fetchAll();
     }
+
+	public function insert($obj){
+    	$sql = "INSERT INTO $this->table(name,email,password) VALUES (:name,:email,:password)";
+    	$query = Connection::prepare($sql);
+        $query->bindValue('name',  $obj->name);
+        $query->bindValue('email', $obj->email);
+        $query->bindValue('password' , password_hash($obj->password, PASSWORD_DEFAULT));
+    	$query->execute();
+		$result = $query->db->lastInsertId();
+
+		return $result;
+		
+
+		
+
+	}
 }
 
 ?>

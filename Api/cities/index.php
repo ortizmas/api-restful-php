@@ -4,15 +4,10 @@
     header("Access-Control-Allow-Origin: *");
     header("Content-Type: application/json; charset=UTF-8");
 
-    require '../../Controllers/StateController.php';
+    require '../../Controllers/CityController.php';
 
-    $state = new StateController();
-    $result = $state->index();
-
-    // foreach ($result->fetchAll() as $key => $value) {
-    //     echo json_encode($value);
-    // }
-
+    $city = new CityController();
+    $result = $city->index();
     $count = $result->rowCount();
 
     if ($count > 0) {
@@ -22,15 +17,16 @@
 
         while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
             extract($row);
-            $state_item = array(
+            $city_item = array(
                 'id' => $id,
                 'name' => $name,
-                'abbreviation' => $abbreviation,
+                'ibge_code' => $ibge_code,
+                'state_id' => $state_id,
                 'created_at' => $created_at,
                 'updated_at' => $updated_at
             );
 
-            array_push($state_arr['data'], $state_item);
+            array_push($state_arr['data'], $city_item);
         }
         // 200 OK
         http_response_code(200);
